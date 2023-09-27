@@ -1,4 +1,4 @@
--------------------------------- DATABASE INPUTLIGHTBNB -------------------------------- 
+-------------------------------- DATABASE INPUT LIGHTBNB -------------------------------- 
 
 INSERT INTO users (name, email, password) 
 VALUES 
