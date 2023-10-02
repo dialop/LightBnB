@@ -24,7 +24,6 @@ const getUserWithEmail = function (email) {
     .catch(err => console.error('query error', err.stack));
 };
 
-
 const getUserWithId = function (id) {
   const querySting = `
   SELECT * 
@@ -52,23 +51,30 @@ const addUser = function (user) {
 };
 
 // ---------------- RESERVATIONS ---------------- //
-/**
- * Get all reservations for a single user.
- * @param {string} guest_id The id of the user.
- * @return {Promise<[{}]>} A promise to the reservations.
- */
+
 const getAllReservations = function (guest_id, limit = 10) {
-  return getAllProperties(null, 2);
+  const queryString = `
+  SELECT reservations.*, properties.*, AVG(property_reviews.rating) as average_rating
+  FROM reservations
+  JOIN properties ON reservations.property_id = properties.id
+  JOIN property_reviews ON properties.id = property_reviews.property_id
+  WHERE reservations.guest_id = $1
+  AND reservations.end_date < NOW()::date
+  GROUP BY properties.id, reservations.id
+  ORDER BY reservations.start_date DESC
+  LIMIT $2;
+  `;
+  const resValue = [guest_id, limit];
+
+  return pool 
+    .query(queryString, resValue)
+    .then(res => res.rows)
+    .catch(err => console.error('query error', err.stack));
 };
+
 
 // ---------------- PROPERTIES  ---------------- //
 
-/**
- * Get all properties.
- * @param {{}} options An object containing query options.
- * @param {*} limit The number of results to return.
- * @return {Promise<[{}]>}  A promise to the properties.
- */
 const getAllProperties = (options, limit = 10) => {
   return pool
     .query(`SELECT * FROM properties LIMIT $1`, [limit])
