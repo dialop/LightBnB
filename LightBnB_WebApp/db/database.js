@@ -1,4 +1,3 @@
-
 // ---------------- DEPENDENCIES ---------------- //
 const { Pool } = require('pg');
 require('dotenv').config();
@@ -7,10 +6,12 @@ const pool = new Pool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   host: process.env.DB_HOST,
-  database: process.env.DB_DATABASE
+  database: process.env.DB_DATABASE,
+  port: process.env.DB_PORT
 });
 
 // ---------------- USERS ---------------- //
+
 const getUserWithEmail = function(email) {
   const queryString = `
   SELECT *  
@@ -79,7 +80,7 @@ const getAllProperties = (options, limit = 10) => {
   let queryString = `
     SELECT properties.*, AVG(property_reviews.rating) as average_rating
     FROM properties
-    JOIN property_reviews ON properties.id = property_id
+    LEFT JOIN property_reviews ON properties.id = property_id
   `;
 
   if (options.city) {
