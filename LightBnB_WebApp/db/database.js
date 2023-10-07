@@ -1,7 +1,10 @@
+
+
 // ---------------- DEPENDENCIES ---------------- //
 const { Pool } = require('pg');
 require('dotenv').config();
 
+// -- Setting up a connection pool with PostgreSQL using environment variables -- //
 const pool = new Pool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
@@ -10,8 +13,10 @@ const pool = new Pool({
   port: process.env.DB_PORT
 });
 
+
 // ---------------- USERS ---------------- //
 
+// -- fetch user details using their emails -- //
 const getUserWithEmail = function(email) {
   const queryString = `
   SELECT *  
@@ -24,6 +29,7 @@ const getUserWithEmail = function(email) {
     .catch(err => console.error('query error', err.stack));
 };
 
+// -- fetch user details using their id -- //
 const getUserWithId = function(id) {
   const queryString = `
   SELECT * 
@@ -37,6 +43,7 @@ const getUserWithId = function(id) {
 };
 
 
+// -- add a new user to the database -- //
 const addUser = function(user) {
   const queryString = `
   INSERT INTO users (name, email, password)   
@@ -51,10 +58,13 @@ const addUser = function(user) {
 };
 
 // ---------------- RESERVATIONS ---------------- //
+
+// -- Fetch all reservations for a particular guest -- //
 const getAllReservations = function(guest_id, limit = 10) {
   const queryString = `
-  SELECT reservations.*, properties.*, AVG(property_reviews.rating) as average_rating
-  FROM reservations
+  SELECT reservations.id, properties.title, properties.cost_per_night, 
+             reservations.start_date, avg(property_reviews.rating) as average_rating
+      FROM reservations
   JOIN properties ON reservations.property_id = properties.id
   JOIN property_reviews ON properties.id = property_reviews.property_id
   WHERE reservations.guest_id = $1
@@ -73,6 +83,8 @@ const getAllReservations = function(guest_id, limit = 10) {
 
 
 // ---------------- PROPERTIES  ---------------- //
+
+// -- Fetch all properties with optional filters provided in the 'options' parameter --//
 const getAllProperties = (options, limit = 10) => {
   const queryParams = [];
   const queryValues = [];
@@ -81,12 +93,14 @@ const getAllProperties = (options, limit = 10) => {
     SELECT properties.*, AVG(property_reviews.rating) as average_rating
     FROM properties
     LEFT JOIN property_reviews ON properties.id = property_id
+    WHERE 1 = 1
   `;
+
 
   if (options.city) {
     queryParams.push(`%${options.city}%`);
     queryValues.push(`%${options.city}%`);
-    queryString += ` WHERE city LIKE $${queryParams.length}`;
+    queryString += ` AND city LIKE $${queryParams.length}`;
   }
 
   if (options.owner_id) {
@@ -120,10 +134,13 @@ const getAllProperties = (options, limit = 10) => {
     LIMIT $${queryParams.length};
   `;
 
-  console.log(queryString, queryValues);
+  return pool.query(queryString, queryValues).then((res) => {
+    return res.rows
+  });
 
-  return pool.query(queryString, queryValues).then((res) => res.rows);
 };
+
+// -- Add a new property to the database -- //
 
 const addProperty = function(property) {
 
