@@ -1,6 +1,10 @@
 # LightBnB
 
+<<<<<<< HEAD
 A simple multi-page Airbnb clone that uses a server-side Javascript to display the information from queries to web pages via SQL queries.
+=======
+A simple multi-page Airbnb clone that uses server-side Javascript to display the information from queries to web pages via SQL queries.
+>>>>>>> 9355500f24814d1c8e66c04c95f4122dabbb73e8
 
 ## Project Structure
 
